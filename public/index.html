@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>blizzer best - Login</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="centered-container">
+    <h1>blizzer best</h1>
+    <div id="login-area">
+      <input id="username" placeholder="Username" autocomplete="off" />
+      <input id="password" type="password" placeholder="Password" autocomplete="off" />
+      <div class="button-row" style="display:flex; gap:10px; justify-content:center;">
+        <button id="loginBtn" style="width:auto; padding:10px 25px;">Login</button>
+        <button id="registerBtn" style="width:auto; padding:10px 25px;">Register</button>
+      </div>
+    </div>
+  </main>
+<script>
+  const loginBtn = document.getElementById('loginBtn')
+  const registerBtn = document.getElementById('registerBtn')
+  const usernameInput = document.getElementById('username')
+  const passwordInput = document.getElementById('password')
+
+  loginBtn.onclick = async () => {
+    const username = usernameInput.value.trim()
+    const password = passwordInput.value.trim()
+    if(!username || !password) return
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({username,password})
+    })
+    const data = await res.json()
+    if(data.success) {
+      sessionStorage.setItem('username', username)
+      sessionStorage.setItem('isAdmin', username.toLowerCase() === 'realalex' ? 'true' : 'false')
+      location.href = 'dashboard.html'
+    } else alert('Invalid login')
+  }
+
+  registerBtn.onclick = async () => {
+    const username = usernameInput.value.trim()
+    const password = passwordInput.value.trim()
+    if(!username || !password) return
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({username,password})
+    })
+    const data = await res.json()
+    if(data.success) alert('Registration successful, you can now login.')
+    else alert('Username taken or error')
+  }
+</script>
+</body>
+</html>

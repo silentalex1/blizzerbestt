@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>blizzer best - Admin Panel</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-left"></div>
+  <div class="nav-center">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="typerace.html">Typing Race</a>
+    <a href="#" id="communityLink">Our Community</a>
+  </div>
+  <div class="nav-right">
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+  </div>
+</nav>
+<main class="adminpanel-container">
+  <h1>Admin Panel</h1>
+  <input type="password" id="adminPass" placeholder="Enter Admin Password" autocomplete="off" />
+  <button id="loginBtn">Login</button>
+  <div id="panel" style="display:none;">
+    <input type="text" id="botToken" placeholder="Discord Bot Token" autocomplete="off" />
+    <div class="bot-actions">
+      <button id="editBotBtn">Edit Bot Code</button>
+      <button id="saveBotBtn" disabled>Save Bot Code</button>
+      <button id="startBotBtn">Start Bot</button>
+      <button id="stopBotBtn" disabled>Stop Bot</button>
+    </div>
+    <textarea id="botCode" readonly>const { Client, GatewayIntentBits } = require('discord.js');
+const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+client.on('ready', () => { console.log(`Logged in as ${client.user.tag}!`); });
+client.login('YOUR_BOT_TOKEN_HERE');</textarea>
+    <div id="botStatus">Bot is stopped.</div>
+  </div>
+</main>
+<script>
+  const adminPass = document.getElementById('adminPass')
+  const loginBtn = document.getElementById('loginBtn')
+  const panel = document.getElementById('panel')
+  const botToken = document.getElementById('botToken')
+  const editBtn = document.getElementById('editBotBtn')
+  const saveBtn = document.getElementById('saveBotBtn')
+  const startBtn = document.getElementById('startBotBtn')
+  const stopBtn = document.getElementById('stopBotBtn')
+  const botCode = document.getElementById('botCode')
+  const botStatus = document.getElementById('botStatus')
+  const communityLink = document.getElementById('communityLink')
+
+  communityLink.onclick = () => {
+    window.open('https://discord.gg/JjtdCzxnwE', '_blank')
+  }
+
+  loginBtn.onclick = () => {
+    if(adminPass.value === 'admin123') {
+      panel.style.display = 'block'
+      adminPass.style.display = 'none'
+      loginBtn.style.display = 'none'
+    }
+  }
+
+  editBtn.onclick = () => {
+    botCode.readOnly = false
+    editBtn.disabled = true
+    saveBtn.disabled = false
+  }
+
+  saveBtn.onclick = () => {
+    botCode.readOnly = true
+    editBtn.disabled = false
+    saveBtn.disabled = true
+  }
+
+  startBtn.onclick = () => {
+    if(!botToken.value.trim()) return
+    botStatus.textContent = 'Starting bot...'
+    startBtn.disabled = true
+    stopBtn.disabled = false
+  
+    botStatus.textContent = 'Bot is running.'
+  }
+
+  stopBtn.onclick = () => {
+ 
+    botStatus.textContent = 'Bot is stopped.'
+    startBtn.disabled = false
+    stopBtn.disabled = true
+  }
+
+  document.getElementById('logoutBtn').onclick = () => {
+    sessionStorage.clear()
+    location.href = 'index.html'
+  }
+</script>
+</body>
+</html>

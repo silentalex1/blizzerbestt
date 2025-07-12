@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>blizzer best - Typing Race</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-left"></div>
+  <div class="nav-center">
+    <a href="dashboard.html">Dashboard</a>
+    <a href="#" id="communityLink">Our Community</a>
+  </div>
+  <div class="nav-right">
+    <a href="adminpanel.html" class="admin-btn">Admin Panel</a>
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+  </div>
+</nav>
+<main class="typerace-container">
+  <h2>Typing Race</h2>
+  <div id="words"></div>
+  <input id="input" autocomplete="off" />
+  <div id="wpm">WPM: 0</div>
+  <div id="result"></div>
+  <button id="restartBtn">Restart</button>
+</main>
+<script>
+  const username = sessionStorage.getItem('username')
+  if(!username) location.href = 'index.html'
+
+  const wordList = ['blizzard','typing','race','chat','community','fast','keyboard','challenge','speed','accuracy','monkeytype','fun','test','javascript','node','express','socket','web','code','game','server','client','interface','design','performance','random','words','typingtest','skill','practice','focus','concentration','improve','learn','typingrace','keyboardskills','speedtest']
+  let words = []
+  let currentIndex = 0
+  let startTime = null
+  let correctChars = 0
+  const wordsEl = document.getElementById('words')
+  const inputEl = document.getElementById('input')
+  const resultEl = document.getElementById('result')
+  const restartBtn = document.getElementById('restartBtn')
+  const wpmEl = document.getElementById('wpm')
+
+  function generateWords() {
+    words = []
+    for(let i=0;i<30;i++) {
+      words.push(wordList[Math.floor(Math.random()*wordList.length)])
+    }
+  }
+
+  function renderWords() {
+    wordsEl.innerHTML = ''
+    words.forEach((word,i) => {
+      const span = document.createElement('span')
+      span.textContent = word + ' '
+      if(i === currentIndex) span.classList.add('current')
+      wordsEl.appendChild(span)
+    })
+  }
+
+  function startTimer() {
+    if(!startTime) startTime = Date.now()
+  }
+
+  function calculateWPM() {
+    const elapsedMinutes = (Date.now() - startTime) / 60000
+    return elapsedMinutes > 0 ? Math.round((correctChars / 5) / elapsedMinutes) : 0
+  }
+
+  inputEl.addEventListener('input', () => {
+    startTimer()
+    const currentWord = words[currentIndex]
+    const typed = inputEl.value.trim()
+    if(currentWord.startsWith(typed)) {
+      wordsEl.children[currentIndex].classList.remove('incorrect')
+      wordsEl.children[currentIndex].classList.add('current')
+    } else {
+      wordsEl.children[currentIndex].classList.add('incorrect')
+    }
+    if(typed === currentWord && inputEl.value.endsWith(' ')) {
+      correctChars += currentWord.length
+      currentIndex++
+      inputEl.value = ''
+      renderWords()
+      if(currentIndex === words.length) endRace()
+    }
+    wpmEl.textContent = `WPM: ${calculateWPM()}`
+  })
+
+  function endRace() {
+    inputEl.disabled = true
+    resultEl.textContent = `Race complete! Your WPM: ${calculateWPM()}`
+  }
+
+  restartBtn.onclick = () => {
+    currentIndex = 0
+    correctChars = 0
+    startTime = null
+    inputEl.disabled = false
+    resultEl.textContent = ''
+    inputEl.value = ''
+    generateWords()
+    renderWords()
+    wpmEl.textContent = 'WPM: 0'
+    inputEl.focus()
+  }
+
+  restartBtn.click()
+
+  document.getElementById('logoutBtn').onclick = () => {
+    sessionStorage.clear()
+    location.href = 'index.html'
+  }
+
+  document.getElementById('communityLink').onclick = () => {
+    window.open('https://discord.gg/JjtdCzxnwE', '_blank')
+  }
+</script>
+</body>
+</html>

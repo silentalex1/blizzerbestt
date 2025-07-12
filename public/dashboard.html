@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>blizzer best - Dashboard</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-left"></div>
+  <div class="nav-center">
+    <a href="typerace.html">Typing Race</a>
+    <a href="#" id="communityLink">Our Community</a>
+  </div>
+  <div class="nav-right">
+    <a href="adminpanel.html" class="admin-btn">Admin Panel</a>
+    <button id="logoutBtn" class="logout-btn">Logout</button>
+  </div>
+</nav>
+<main class="dashboard-container">
+  <h2 id="welcome-msg"></h2>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="chat">Chat</button>
+    <button class="tab-btn" data-tab="news">News</button>
+    <button id="postNewsBtn" style="display:none;">Post News</button>
+  </div>
+  <section id="chat" class="tab-content active">
+    <div id="chat-window"></div>
+    <input id="chat-input" placeholder="Type a message..." autocomplete="off" />
+    <button id="sendBtn">Send</button>
+  </section>
+  <section id="news" class="tab-content">
+    <ul id="news-list"></ul>
+    <textarea id="news-text" placeholder="Write news here..." style="display:none;"></textarea>
+    <button id="submitNewsBtn" style="display:none;">Submit News</button>
+  </section>
+</main>
+<script>
+  const username = sessionStorage.getItem('username')
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'true'
+  if(!username) location.href = 'index.html'
+
+  const ws = new WebSocket(`ws://${location.host}`)
+  const welcomeMsg = document.getElementById('welcome-msg')
+  const chatWindow = document.getElementById('chat-window')
+  const chatInput = document.getElementById('chat-input')
+  const sendBtn = document.getElementById('sendBtn')
+
+  const tabs = document.querySelectorAll('.tab-btn')
+  const contents = document.querySelectorAll('.tab-content')
+
+  const postNewsBtn = document.getElementById('postNewsBtn')
+  const newsList = document.getElementById('news-list')
+  const newsText = document.getElementById('news-text')
+  const submitNewsBtn = document.getElementById('submitNewsBtn')
+  const communityLink = document.getElementById('communityLink')
+
+  welcomeMsg.textContent = `Welcome ${username}!`
+
+  if(isAdmin) {
+    postNewsBtn.style.display = 'inline-block'
+    newsText.style.display = 'block'
+    submitNewsBtn.style.display = 'inline-block'
+  }
+
+  tabs.forEach(tab => {
+    tab.onclick = () => {
+      tabs.forEach(t => t.classList.remove('active'))
+      contents.forEach(c => c.classList.remove('active'))
+      tab.classList.add('active')
+      document.getElementById(tab.dataset.tab).classList.add('active')
+    }
+  })
+
+  communityLink.onclick = () => {
+    window.open('https://discord.gg/JjtdCzxnwE', '_blank')
+  }
+
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ type: 'login', username, password: '' }))
+  }
+
+  ws.onmessage = e => {
+    const data = JSON.parse(e.data)
+    if(data.type === 'globalChat') appendMessage(data.message)
+    if(data.type === 'globalChatHistory') data.messages.forEach(appendMessage)
+    if(data.type === 'newsUpdate') {
+      newsList.innerHTML = ''
+      data.news.forEach(n => {
+        const li = document.createElement('li')
+        const d = new Date(n.time)
+        li.textContent = `${d.toLocaleDateString()} - ${n.text}`
+        newsList.appendChild(li)
+      })
+    }
+  }
+
+  sendBtn.onclick = sendMessage
+  chatInput.addEventListener('keydown', e => {
+    if(e.key === 'Enter') {
+      sendMessage()
+      e.preventDefault()
+    }
+  })
+
+  postNewsBtn.onclick = () => {
+    if(newsText.value.trim()) {
+      ws.send(JSON.stringify({ type: 'postNews', text: newsText.value.trim() }))
+      newsText.value = ''
+    }
+  }
+
+  document.getElementById('logoutBtn').onclick = () => {
+    sessionStorage.clear()
+    location.href = 'index.html'
+  }
+
+  function sendMessage() {
+    if(chatInput.value.trim()) {
+      ws.send(JSON.stringify({ type: 'sendMessage', text: chatInput.value.trim() }))
+      chatInput.value = ''
+    }
+  }
+
+  function appendMessage(msg) {
+    const el = document.createElement('div')
+    el.dataset.id = msg.id
+    el.style.padding = '6px 10px'
+    el.style.borderBottom = '1px solid #333'
+    el.style.position = 'relative'
+
+    const userSpan = document.createElement('span')
+    userSpan.style.fontWeight = '700'
+    userSpan.style.color = msg.role === 'admin' ? 'red' : '#4caf50'
+    userSpan.textContent = msg.user + ': '
+    el.appendChild(userSpan)
+
+    const textSpan = document.createElement('span')
+    textSpan.textContent = msg.text
+    el.appendChild(textSpan)
+
+    if(msg.user === username) {
+      const editBtn = document.createElement('button')
+      editBtn.textContent = 'Edit'
+      editBtn.style.position = 'absolute'
+      editBtn.style.right = '60px'
+      editBtn.style.top = '6px'
+      editBtn.style.fontSize = '12px'
+      editBtn.style.background = '#555'
+      editBtn.style.color = 'white'
+      editBtn.style.border = 'none'
+      editBtn.style.borderRadius = '3px'
+      editBtn.style.padding = '2px 5px'
+      editBtn.style.cursor = 'pointer'
+      editBtn.onclick = () => editMessage(msg.id, el, textSpan)
+      el.appendChild(editBtn)
+
+      const delBtn = document.createElement('button')
+      delBtn.textContent = 'Delete'
+      delBtn.style.position = 'absolute'
+      delBtn.style.right = '10px'
+      delBtn.style.top = '6px'
+      delBtn.style.fontSize = '12px'
+      delBtn.style.background = 'darkred'
+      delBtn.style.color = 'white'
+      delBtn.style.border = 'none'
+      delBtn.style.borderRadius = '3px'
+      delBtn.style.padding = '2px 5px'
+      delBtn.style.cursor = 'pointer'
+      delBtn.onclick = () => deleteMessage(msg.id, el)
+      el.appendChild(delBtn)
+    }
+
+    chatWindow.appendChild(el)
+    chatWindow.scrollTop = chatWindow.scrollHeight
+  }
+
+  function editMessage(id, el, textSpan) {
+    const input = document.createElement('input')
+    input.type = 'text'
+    input.value = textSpan.textContent
+    input.style.width = '70%'
+    el.replaceChild(input, textSpan)
+
+    input.focus()
+
+    input.addEventListener('keydown', e => {
+      if(e.key === 'Enter') {
+        if(input.value.trim()) {
+          ws.send(JSON.stringify({ type: 'editMessage', id, newText: input.value.trim() }))
+          textSpan.textContent = input.value.trim()
+          el.replaceChild(textSpan, input)
+        }
+      }
+      if(e.key === 'Escape') {
+        el.replaceChild(textSpan, input)
+      }
+    })
+  }
+
+  function deleteMessage(id, el) {
+    ws.send(JSON.stringify({ type: 'deleteMessage', id }))
+    el.remove()
+  }
+</script>
+</body>
+</html>
