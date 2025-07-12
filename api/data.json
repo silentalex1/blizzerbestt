@@ -1,0 +1,48 @@
+{
+  "users": {
+    "realalex": {
+      "password": "Tiptop4589$$"
+    }
+  },
+  "messages": [
+    {
+      "user": "realalex",
+      "text": "test"
+    },
+    {
+      "user": "realalex",
+      "text": "ttsstt"
+    },
+    {
+      "user": "realalex",
+      "text": "tesdt"
+    },
+    {
+      "user": "realalex",
+      "text": "testttt"
+    },
+    {
+      "id": "1752316309422gaho0yaox1f",
+      "user": "realalex",
+      "role": "user",
+      "text": "testt",
+      "group": null,
+      "time": 1752316309422
+    }
+  ],
+  "news": [
+    {
+      "text": "yo welcome new users to the site less goo",
+      "time": 1752312409858
+    }
+  ],
+  "groups": {},
+  "adminCodes": [
+    "blizzard_adminx9mipp",
+    "blizzard_admintxilhb",
+    "blizzard_adminexajr8",
+    "blizzard_admin2reibd",
+    "blizzard_adminq9x34m"
+  ],
+  "blacklisted": []
+}
